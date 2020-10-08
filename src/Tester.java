@@ -1,10 +1,11 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Tester {
-    private static final ArrayList<String> size = new ArrayList<>();
-    private static final ArrayList<String> weight = new ArrayList<>();
+    private static final ArrayList<String> all= new ArrayList<>();
+    private static final ArrayList<String> weight= new ArrayList<>();
     private static final ArrayList<String> number = new ArrayList<>();
     private static final ArrayList<String> rowX = new ArrayList<>();
     private static final ArrayList<String> rowY = new ArrayList<>();
@@ -16,22 +17,10 @@ public class Tester {
             br = new BufferedReader(new FileReader(filePath)); //字元輸入流化
             try {
                 String data;
-                int line = 0; // 計算行數
                 while ((data = br.readLine()) != null) { //迴圈的讀取一行一行讀取檔案，直到最後一行為空停止
                     array = data.split("\\s+");
-                    ++line; // 計算行數 每印一行 行數就加一
-                    System.out.print(Arrays.toString(array));
+                    Collections.addAll(all, array); // 遍歷array的值存進all
                 }
-
-                size.add(array[0]); // 第一行是表格大小
-                weight.add(array[1]); // 第二行是權重
-//                for(int i=2; i<line; i++){
-//                    number.add(array[i]);
-//                }
-
-                System.out.print(size);
-                System.out.print(weight);
-//                System.out.print(number);
                 br.close(); //關閉輸入流
             } catch (IOException e) {
                 // TODO Auto-generated catch block
@@ -43,7 +32,31 @@ public class Tester {
         }
     }
 
+    public static void parseData(){
+        String row = all.get(0); // 總列數
+        String col = all.get(1); // 總行數
+        for(int  i = 2; i <= Integer.parseInt(col)+1; i++){
+            weight.add(all.get(i)); // 權重
+        }
+        for(int i = Integer.parseInt(col)+2; i < all.size(); i++){
+            number.add(all.get(i));
+        }
+        for (int i = 0; i < number.size(); i++){
+            if(i % 2 == 0){
+                rowX.add(number.get(i)); // X項
+            }else {
+                rowY.add(number.get(i)); // Y項
+            }
+        }
+        System.out.print(row);
+        System.out.print(col);
+        System.out.print(weight);
+        System.out.print(rowX);
+        System.out.print(rowY);
+    }
+
     public static void main(String[] args) {
         readFile("C:\\Users\\USER\\Desktop\\bench\\bench1.txt");
+        parseData();
     }
 }
