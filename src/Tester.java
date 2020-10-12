@@ -1,25 +1,31 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.stream.IntStream;
 
 public class Tester {
-    private static final ArrayList<String> all= new ArrayList<>();
-    private static final ArrayList<String> weight= new ArrayList<>();
-    private static final ArrayList<String> number = new ArrayList<>();
-    private static final ArrayList<String> rowX = new ArrayList<>();
-    private static final ArrayList<String> colY = new ArrayList<>();
-    private static final ArrayList<Integer>tmpArr = new ArrayList<>();
+    private static final ArrayList<String> arr_data= new ArrayList<>();
+    private static final ArrayList<String> arr_check= new ArrayList<>();
+    private static final ArrayList<String> arr_weight= new ArrayList<>();
+    private static final ArrayList<String> arr_number = new ArrayList<>();
+    private static final ArrayList<String> arr_rowX = new ArrayList<>();
+    private static final ArrayList<String> arr_colY = new ArrayList<>();
+    private static final ArrayList<Integer> arr_tmp = new ArrayList<>();
+    private static final ArrayList<String> arr_choose = new ArrayList<>();
     private static int[] arr;
-    private static String row;
-    private static String col;
+    private static int[][] check;
+    private  static int[] line;
+    private static String srow;
+    private static String scol;
 
     public static void main(String[] args) {
-        readFile("C:\\Users\\USER\\Desktop\\bench\\bench1.txt");
+        readFile("C:\\Users\\user\\Desktop\\bench\\bench1.txt");
         parseData();
-        checkCovering();
-        for( int i = 0; i < Integer.parseInt(col); i++){
-            combine(0 ,i+1); // 列出所有取法
+        buildForm();
+        for( int i = 0; i < Integer.parseInt(scol); i++){
+            calculate(0 ,i+1); // 列出所有取法
         }
+        checkCovering();
     }
 
     public static void readFile(String filePath) { // 讀檔案
@@ -30,7 +36,7 @@ public class Tester {
                 String data;
                 while ((data = br.readLine()) != null) { //迴圈的讀取一行一行讀取檔案，直到最後一行為空停止
                     String[] split_arr = data.split("\\s+");
-                    Collections.addAll(all, split_arr); // 遍歷array的值存進all
+                    Collections.addAll(arr_data, split_arr); // 遍歷array的值存進all
                 }
                 br.close(); //關閉輸入流
             } catch (IOException e) {
@@ -44,53 +50,92 @@ public class Tester {
     }
 
     public static void parseData(){ // 拆解資料
-        row = all.get(0); // 總列數
-        col = all.get(1); // 總行數
+        // input data的資料拆解
+        srow = arr_data.get(0); // 總列數
+        scol = arr_data.get(1); // 總行數
 
-        for(int  i = 2; i <= Integer.parseInt(col)+1; i++){
-            weight.add(all.get(i)); // 權重
+        for(int  i = 2; i <= Integer.parseInt(scol)+1; i++){
+            arr_weight.add(arr_data.get(i)); // 權重
         }
-        for(int i = Integer.parseInt(col)+2; i < all.size(); i++){
-            number.add(all.get(i));
+        for(int i = Integer.parseInt(scol)+2; i < arr_data.size(); i++){
+            arr_number.add(arr_data.get(i));
         }
-        for (int i = 0; i < number.size(); i++){
+        for (int i = 0; i < arr_number.size(); i++){
             if(i % 2 == 0){
-                rowX.add(number.get(i)); // X項
+                arr_rowX.add(arr_number.get(i)); // X項
             }else {
-                colY.add(number.get(i)); // Y項
+                arr_colY.add(arr_number.get(i)); // Y項
             }
         }
     }
 
-    public static void checkCovering(){ // 建立表格
-        int[][] check = new int[Integer.parseInt(row)][Integer.parseInt(col)]; // 初值皆為0
-        for(int i = 0; i < rowX.size(); i++){
-            int x = Integer.parseInt(rowX.get(i));
-            int y = Integer.parseInt(colY.get(i));
+    public static void buildForm(){ // 建立表格
+        check = new int[Integer.parseInt(srow)][Integer.parseInt(scol)]; // 初值皆為true
+        line = new int[Integer.parseInt(srow)]; // 初值皆為true
+        for(int i = 0; i < arr_rowX.size(); i++){
+            int x = Integer.parseInt(arr_rowX.get(i));
+            int y = Integer.parseInt(arr_colY.get(i));
             check[x-1][y-1] = 1; // 將表格內是1的標示出來
         }
+        //System.out.print(check[3][3]);
     }
 
-    public static void combine(int index, int k) { // 計算所有取法
-        int[] arr = new int[Integer.parseInt(col)];
-        for(int i = 0; i < Integer.parseInt(col); i++){
+    public static void calculate(int index, int k) { // 計算所有取法
+        int[] arr = new int[Integer.parseInt(scol)];
+        for(int i = 0; i < Integer.parseInt(scol); i++){
             arr[i] = i+1;
         }
 
         if(k == 1){
             for (int i = index; i < arr.length; i++) {
-                tmpArr.add(arr[i]);
-                System.out.println(tmpArr.toString());
-                tmpArr.remove((Object) arr[i]);
+                arr_tmp.add(arr[i]);
+                arr_choose.addAll(Collections.singleton(arr_tmp.toString()));
+                arr_tmp.remove((Object) arr[i]);
             }
         }else if(k > 1){
             for (int i = index; i <= arr.length - k; i++) {
-                tmpArr.add(arr[i]);
-                combine(i + 1,k - 1);
-                tmpArr.remove((Object) arr[i]);
+                arr_tmp.add(arr[i]);
+                calculate(i + 1,k - 1);
+                arr_tmp.remove((Object) arr[i]);
             }
         }else{
             return;
         }
+    }
+
+    public static void checkCovering(){ // 檢查covering
+        for(int i = 0; i < arr_choose.size(); i++){ // 組合數的資料拆解
+            String[] split_arr = arr_choose.get(i).split("\\[|,+\\s+|]");
+            Collections.addAll(arr_check, split_arr);
+        }
+        for (int i = 0; i < arr_check.size(); i++){ // 去除空白
+            if(arr_check.get(i).equals("")){
+                arr_check.remove(i);
+            }
+        }
+        for(int i = Integer.parseInt(scol); i < arr_check.size()-Integer.parseInt(scol); i++){
+            if(Integer.parseInt(arr_check.get(i)) < Integer.parseInt(arr_check.get(i+1)) ||
+                Integer.parseInt(arr_check.get(i+1)) > Integer.parseInt(arr_check.get(i+2))){
+                for(int j = 0; j < Integer.parseInt(scol); j++){
+                     if(check[j][Integer.parseInt(arr_check.get(i))-1] +
+                             check[j][Integer.parseInt(arr_check.get(i+1))-1] >= 1){
+                         line[j] = 1;
+                     }
+                    System.out.print(line[j]);
+                }
+                if(IntStream.of(line).allMatch(num -> num == 1)){ // 若全是1
+                    //System.out.print(Integer.parseInt(arr_check.get(i)));
+                    //System.out.print(Integer.parseInt(arr_check.get(i+1)));
+                    //System.out.print("weight : " + (Integer.parseInt(arr_weight.get(Integer.parseInt(arr_check.get(i))-1))
+                    //        + Integer.parseInt(arr_weight.get(Integer.parseInt(arr_check.get(i+1))-1))));
+                    //System.out.print("cost : ");
+                }
+            }else {
+                for(int j = 0; j < Integer.parseInt(scol); j++){
+                    line[j] = 0; // 歸零
+                }
+            }
+        }
+        System.out.println(arr_check);
     }
 }
