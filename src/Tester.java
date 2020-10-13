@@ -1,29 +1,35 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class Tester {
-    private static final ArrayList<String> arr_data= new ArrayList<>();
-    private static final ArrayList<String> arr_check= new ArrayList<>();
-    private static final ArrayList<String> arr_weight= new ArrayList<>();
+    private static final ArrayList<String> arr_data = new ArrayList<>();
+    private static final ArrayList<String> arr_check = new ArrayList<>();
+    private static final ArrayList<String> arr_weight = new ArrayList<>();
+    private static final ArrayList<String> arr_cost = new ArrayList<>();
     private static final ArrayList<String> arr_number = new ArrayList<>();
     private static final ArrayList<String> arr_rowX = new ArrayList<>();
     private static final ArrayList<String> arr_colY = new ArrayList<>();
     private static final ArrayList<Integer> arr_tmp = new ArrayList<>();
     private static final ArrayList<String> arr_choose = new ArrayList<>();
+    private static final ArrayList<ArrayList<String>> tmpList = new ArrayList<>();
+    private static final ArrayList<ArrayList<String>> answerList = new ArrayList<>();
     private static int[] arr;
     private static int[][] check;
-    private  static int[] line;
+    private static int[] line;
     private static String srow;
     private static String scol;
+    private static int stotalWeight = 0;
 
     public static void main(String[] args) {
         readFile("C:\\Users\\user\\Desktop\\bench\\bench1.txt");
         parseData();
         buildForm();
-        for( int i = 0; i < Integer.parseInt(scol); i++){
-            calculate(0 ,i+1); // 列出所有取法
+        for (int i = 0; i < Integer.parseInt(scol); i++) {
+            calculate(0, i + 1); // 列出所有取法
         }
         checkCovering();
     }
@@ -49,93 +55,109 @@ public class Tester {
         }
     }
 
-    public static void parseData(){ // 拆解資料
+    public static void parseData() { // 拆解資料
         // input data的資料拆解
         srow = arr_data.get(0); // 總列數
         scol = arr_data.get(1); // 總行數
 
-        for(int  i = 2; i <= Integer.parseInt(scol)+1; i++){
+        for (int i = 2; i <= Integer.parseInt(scol) + 1; i++) {
             arr_weight.add(arr_data.get(i)); // 權重
         }
-        for(int i = Integer.parseInt(scol)+2; i < arr_data.size(); i++){
+        for (int i = Integer.parseInt(scol) + 2; i < arr_data.size(); i++) {
             arr_number.add(arr_data.get(i));
         }
-        for (int i = 0; i < arr_number.size(); i++){
-            if(i % 2 == 0){
+        for (int i = 0; i < arr_number.size(); i++) {
+            if (i % 2 == 0) {
                 arr_rowX.add(arr_number.get(i)); // X項
-            }else {
+            } else {
                 arr_colY.add(arr_number.get(i)); // Y項
             }
         }
     }
 
-    public static void buildForm(){ // 建立表格
+    public static void buildForm() { // 建立表格
         check = new int[Integer.parseInt(srow)][Integer.parseInt(scol)]; // 初值皆為true
         line = new int[Integer.parseInt(srow)]; // 初值皆為true
-        for(int i = 0; i < arr_rowX.size(); i++){
+        for (int i = 0; i < arr_rowX.size(); i++) {
             int x = Integer.parseInt(arr_rowX.get(i));
             int y = Integer.parseInt(arr_colY.get(i));
-            check[x-1][y-1] = 1; // 將表格內是1的標示出來
+            check[x - 1][y - 1] = 1; // 將表格內是1的標示出來
         }
         //System.out.print(check[3][3]);
     }
 
     public static void calculate(int index, int k) { // 計算所有取法
         int[] arr = new int[Integer.parseInt(scol)];
-        for(int i = 0; i < Integer.parseInt(scol); i++){
-            arr[i] = i+1;
+        for (int i = 0; i < Integer.parseInt(scol); i++) {
+            arr[i] = i + 1;
         }
 
-        if(k == 1){
+        if (k == 1) {
             for (int i = index; i < arr.length; i++) {
                 arr_tmp.add(arr[i]);
                 arr_choose.addAll(Collections.singleton(arr_tmp.toString()));
                 arr_tmp.remove((Object) arr[i]);
             }
-        }else if(k > 1){
+        } else if (k > 1) {
             for (int i = index; i <= arr.length - k; i++) {
                 arr_tmp.add(arr[i]);
-                calculate(i + 1,k - 1);
+                calculate(i + 1, k - 1);
                 arr_tmp.remove((Object) arr[i]);
             }
-        }else{
+        } else {
             return;
         }
     }
 
-    public static void checkCovering(){ // 檢查covering
-        for(int i = 0; i < arr_choose.size(); i++){ // 組合數的資料拆解
-            String[] split_arr = arr_choose.get(i).split("\\[|,+\\s+|]");
+    public static void checkCovering() { // 檢查covering
+        for (String s : arr_choose) { // 組合數的資料拆解
+            String[] split_arr = s.split("\\[|,+\\s+|]");
             Collections.addAll(arr_check, split_arr);
         }
-        for (int i = 0; i < arr_check.size(); i++){ // 去除空白
-            if(arr_check.get(i).equals("")){
+        for (int i = 0; i < arr_check.size(); i++) { // 去除空白
+            if (arr_check.get(i).equals("")) {
                 arr_check.remove(i);
             }
         }
-        for(int i = Integer.parseInt(scol); i < arr_check.size()-Integer.parseInt(scol); i++){
-            if(Integer.parseInt(arr_check.get(i)) < Integer.parseInt(arr_check.get(i+1)) ||
-                Integer.parseInt(arr_check.get(i+1)) > Integer.parseInt(arr_check.get(i+2))){
-                for(int j = 0; j < Integer.parseInt(scol); j++){
-                     if(check[j][Integer.parseInt(arr_check.get(i))-1] +
-                             check[j][Integer.parseInt(arr_check.get(i+1))-1] >= 1){
-                         line[j] = 1;
-                     }
-                    System.out.print(line[j]);
+        for (int i = Integer.parseInt(scol); i < arr_check.size() - Integer.parseInt(scol); i++) {
+            if (Integer.parseInt(arr_check.get(i)) < Integer.parseInt(arr_check.get(i + 1)) ||
+                    Integer.parseInt(arr_check.get(i + 1)) > Integer.parseInt(arr_check.get(i + 2))) {
+                for (int j = 0; j < Integer.parseInt(srow); j++) {
+                    if (check[j][Integer.parseInt(arr_check.get(i)) - 1] +
+                            check[j][Integer.parseInt(arr_check.get(i + 1)) - 1] >= 1) {
+                        line[j] = 1;
+                    }
+                    if (!arr_cost.contains(arr_check.get(i)) || !arr_cost.contains(arr_check.get(i + 1))) {
+                        arr_cost.add(arr_check.get(i));
+                        arr_cost.add(arr_check.get(i + 1));
+                    }
+                    //System.out.print(line[j]);
                 }
-                if(IntStream.of(line).allMatch(num -> num == 1)){ // 若全是1
-                    //System.out.print(Integer.parseInt(arr_check.get(i)));
-                    //System.out.print(Integer.parseInt(arr_check.get(i+1)));
-                    //System.out.print("weight : " + (Integer.parseInt(arr_weight.get(Integer.parseInt(arr_check.get(i))-1))
-                    //        + Integer.parseInt(arr_weight.get(Integer.parseInt(arr_check.get(i+1))-1))));
-                    //System.out.print("cost : ");
+                //System.out.print("\n");
+                if (IntStream.of(line).allMatch(num -> num == 1)) { // 若全是1代表有column covering
+                    LinkedHashSet<String> set = new LinkedHashSet<>(arr_cost); // 利用LinkHashSet去重數
+                    ArrayList<String> subList = new ArrayList<>(set); // 將去重的放進新array
+                    tmpList.add(subList);
                 }
-            }else {
-                for(int j = 0; j < Integer.parseInt(scol); j++){
+            } else {
+                for (int j = 0; j < Integer.parseInt(srow); j++) {
                     line[j] = 0; // 歸零
+                }
+                arr_cost.clear(); // 清空array
+            }
+        }
+        //System.out.print("\n" + arr_check);
+
+        for(int i = 0; i < tmpList.size()-1; i++){ // 取最小
+            if(tmpList.get(i).size() < tmpList.get(i+1).size()){
+                answerList.add(tmpList.get(i));
+                for(int j = 0; j < tmpList.get(i).size(); j++){
+                    int sweight = Integer.parseInt(arr_weight.get(Integer.parseInt(tmpList.get(i).get(j))-1));
+                    stotalWeight = stotalWeight + sweight;
                 }
             }
         }
-        System.out.println(arr_check);
+        System.out.print("(" + answerList.get(0).size() + "," + stotalWeight + ")");
+        System.out.print(answerList);
     }
 }
