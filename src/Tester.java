@@ -2,7 +2,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.stream.IntStream;
 
 public class Tester {
@@ -22,10 +21,10 @@ public class Tester {
     private static int[] line;
     private static String srow;
     private static String scol;
-    private static int stotalWeight = 0;
+    private static int itotalWeight = 0;
 
     public static void main(String[] args) {
-        readFile("C:\\Users\\user\\Desktop\\bench\\bench1.txt");
+        readFile("C:\\Users\\user\\Desktop\\bench\\bench3.txt");
         parseData();
         buildForm();
         for (int i = 0; i < Integer.parseInt(scol); i++) {
@@ -55,17 +54,18 @@ public class Tester {
         }
     }
 
-    public static void parseData() { // 拆解資料
-        // input data的資料拆解
+    public static void parseData() { // input data的資料拆解
         srow = arr_data.get(0); // 總列數
         scol = arr_data.get(1); // 總行數
 
         for (int i = 2; i <= Integer.parseInt(scol) + 1; i++) {
             arr_weight.add(arr_data.get(i)); // 權重
         }
+
         for (int i = Integer.parseInt(scol) + 2; i < arr_data.size(); i++) {
             arr_number.add(arr_data.get(i));
         }
+
         for (int i = 0; i < arr_number.size(); i++) {
             if (i % 2 == 0) {
                 arr_rowX.add(arr_number.get(i)); // X項
@@ -83,7 +83,6 @@ public class Tester {
             int y = Integer.parseInt(arr_colY.get(i));
             check[x - 1][y - 1] = 1; // 將表格內是1的標示出來
         }
-        //System.out.print(check[3][3]);
     }
 
     public static void calculate(int index, int k) { // 計算所有取法
@@ -109,16 +108,18 @@ public class Tester {
         }
     }
 
-    public static void checkCovering() { // 檢查covering
+    public static void checkCovering() {
         for (String s : arr_choose) { // 組合數的資料拆解
             String[] split_arr = s.split("\\[|,+\\s+|]");
             Collections.addAll(arr_check, split_arr);
         }
+
         for (int i = 0; i < arr_check.size(); i++) { // 去除空白
             if (arr_check.get(i).equals("")) {
                 arr_check.remove(i);
             }
         }
+
         for (int i = Integer.parseInt(scol); i < arr_check.size() - Integer.parseInt(scol); i++) {
             if (Integer.parseInt(arr_check.get(i)) < Integer.parseInt(arr_check.get(i + 1)) ||
                     Integer.parseInt(arr_check.get(i + 1)) > Integer.parseInt(arr_check.get(i + 2))) {
@@ -131,9 +132,7 @@ public class Tester {
                         arr_cost.add(arr_check.get(i));
                         arr_cost.add(arr_check.get(i + 1));
                     }
-                    //System.out.print(line[j]);
                 }
-                //System.out.print("\n");
                 if (IntStream.of(line).allMatch(num -> num == 1)) { // 若全是1代表有column covering
                     LinkedHashSet<String> set = new LinkedHashSet<>(arr_cost); // 利用LinkHashSet去重數
                     ArrayList<String> subList = new ArrayList<>(set); // 將去重的放進新array
@@ -146,18 +145,42 @@ public class Tester {
                 arr_cost.clear(); // 清空array
             }
         }
-        //System.out.print("\n" + arr_check);
 
-        for(int i = 0; i < tmpList.size()-1; i++){ // 取最小
+        if (tmpList.size() == 1) {
+            answerList.add(tmpList.get(0));
+        }else if(tmpList.size() == 0){
+            ArrayList<String> arr = new ArrayList<>();
+            for(int i = 0; i < Integer.parseInt(scol); i++){
+                arr.add(String.valueOf(i+1));
+            }
+            answerList.add(arr);
+        }
+
+        for(int i = 0; i < tmpList.size()-1; i++){ // 取最少column且weight最小者
             if(tmpList.get(i).size() < tmpList.get(i+1).size()){
-                answerList.add(tmpList.get(i));
+                answerList.add(tmpList.get(i)); // 將最少column covering的存在answerList
                 for(int j = 0; j < tmpList.get(i).size(); j++){
-                    int sweight = Integer.parseInt(arr_weight.get(Integer.parseInt(tmpList.get(i).get(j))-1));
-                    stotalWeight = stotalWeight + sweight;
+                    int iweight1 = Integer.parseInt(arr_weight.get(Integer.parseInt(tmpList.get(i).get(j))-1));
+                    int iweight2 = Integer.parseInt(arr_weight.get(Integer.parseInt(tmpList.get(i+1).get(j))-1));
+
+                    if(answerList.size() == 1 || answerList.size() > 1 && iweight1 < iweight2){
+                        answerList.remove(tmpList.get(i+1));
+                    }else if(answerList.size() == 0) {
+                        for(int z = 0; z < Integer.parseInt(scol); z++){
+
+                        }
+                    }else {
+                        answerList.remove(tmpList.get(i));
+                    }
                 }
             }
         }
-        System.out.print("(" + answerList.get(0).size() + "," + stotalWeight + ")");
-        System.out.print(answerList);
+
+        for(int i = 0; i < answerList.get(0).size(); i++){
+            itotalWeight = itotalWeight + Integer.parseInt(arr_weight.get(Integer.parseInt(answerList.get(0).get(i))-1));
+        }
+
+        System.out.println("the minimum column cover : " + answerList.get(0));
+        System.out.println("cost(C) : (" + answerList.get(0).size() + "," + itotalWeight + ")");
     }
 }
