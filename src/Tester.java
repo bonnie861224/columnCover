@@ -165,10 +165,6 @@ public class Tester {
 
                     if(answerList.size() == 1 || answerList.size() > 1 && iweight1 < iweight2){
                         answerList.remove(tmpList.get(i+1));
-                    }else if(answerList.size() == 0) {
-                        for(int z = 0; z < Integer.parseInt(scol); z++){
-
-                        }
                     }else {
                         answerList.remove(tmpList.get(i));
                     }
@@ -176,7 +172,7 @@ public class Tester {
             }
         }
 
-        for(int i = 0; i < answerList.get(0).size(); i++){
+        for(int i = 0; i < answerList.get(0).size(); i++){ // 權重加總
             itotalWeight = itotalWeight + Integer.parseInt(arr_weight.get(Integer.parseInt(answerList.get(0).get(i))-1));
         }
 
